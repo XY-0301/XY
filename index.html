@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作者:Baoger - 电影搜索库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        #search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+        #search-btn {
+            padding: 12px 30px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        #search-btn:hover {
+            background-color: #2980b9;
+        }
+        /* 摄像头功能按钮样式 */
+        #camera-btn {
+            padding: 12px 30px;
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        #camera-btn:hover {
+            background-color: #8e44ad;
+        }
+        .movie-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .movie-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+            transition: transform 0.3s;
+            touch-action: manipulation;
+        }
+        .movie-card:hover, .movie-card:active {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .movie-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .movie-link {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .movie-link:hover, .movie-link:active {
+            background-color: #27ae60;
+        }
+        .empty-tip {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 18px;
+            padding: 50px 0;
+            line-height: 1.8;
+        }
+        /* 公告弹窗样式 */
+        .notice-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            pointer-events: auto;
+            backdrop-filter: blur(2px);
+        }
+        .notice-content {
+            background-color: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            pointer-events: auto;
+        }
+        .notice-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .notice-text {
+            color: #34495e;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .close-notice {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            color: #7f8c8d;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.3s;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            padding: 0;
+        }
+        .close-notice:hover, .close-notice:active {
+            color: #e74c3c;
+        }
+        /* 底部作者联系方式样式 */
+        .author-contact {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 999;
+        }
+        .contact-link {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s;
+        }
+        .contact-link:hover {
+            color: #2980b9;
+        }
+        /* QQ图标样式 */
+        .qq-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: #3498db;
+            border-radius: 50%;
+            color: white;
+            line-height: 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 公告弹窗 -->
+    <div class="notice-modal" id="noticeModal">
+        <div class="notice-content">
+            <button class="close-notice" id="closeNotice">&times;</button>
+            <h3 class="notice-title">站点更新公告</h3>
+            <div class="notice-text">
+                1. 添加《疯狂动物城》系列电影<br>
+                2. 修复部分失效链接，优化搜索速度<br>
+                3. 如有链接无法访问，请底部联系作者反馈<br>
+                <br>
+                由衷感谢大象影院赞助
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h1>电影搜索库</h1>
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="输入电影名称搜索">
+            <button id="search-btn">搜索</button>
+            <!-- 摄像头按钮 -->
+            <button id="camera-btn">死人大头照</button>
+        </div>
+        <div class="movie-container" id="movie-container">
+            <div class="empty-tip">请输入电影名称进行搜索<br>有任何问题下方联系作者反馈</div>
+        </div>
+    </div>
+    <!-- 底部作者联系方式 -->
+    <div class="author-contact">
+        <a href="mqqapi://card/show_pslcard?card_type=1&source=external&uin=2164569327&version=1" class="contact-link" target="_blank">
+            <span class="qq-icon">Q</span>
+            Feedback（QQ：2164569327）
+        </a>
+    </div>
+    <!-- 摄像头页面 -->
+    <div id="camera-page" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; overflow: hidden;">
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <video id="camera-video" autoplay playsinline muted style="width: 90%; max-width: 600px; height: auto; transform: scaleX(-1); filter: grayscale(100%) contrast(1.1) brightness(0.95);"></video>
+            <p style="color: #fff; margin-top: 20px; font-size: 14px;">前置摄像头已开启 | 黑白滤镜生效</p>
+            <button id="close-camera" style="margin-top: 20px; padding: 10px 30px; background: #e74c3c; color: #fff; border: none; border-radius: 6px; cursor: pointer;">退出</button>
+        </div>
+    </div>
+    <script>
+        // 电影数据
+        let movieData = [
+            { name: "疯狂动物城1", link: "https://www.jizhenqu.com/jzvod-play/245428-1-1.html" },
+            { name: "流浪地球", link: "https://www.ie9e.com/bofang/10017-7-1.html" },
+            { name: "疯狂动物城2", link: "https://www.jizhenqu.com/jzvod-play/315728-1-1.html" },
+            { name: "满江红", link: "https://www.example.com/movie/manjianghong" },
+            { name: "三体", link: "https://www.example.com/movie/santi" },
+            { name: "复仇者联盟", link: "https://www.example.com/movie/avengers" }
+        ];
+        // 页面元素
+        const searchInput = document.getElementById("search-input");
+        const searchBtn = document.getElementById("search-btn");
+        const movieContainer = document.getElementById("movie-container");
+        const noticeModal = document.getElementById("noticeModal");
+        const closeNotice = document.getElementById("closeNotice");
+        const cameraBtn = document.getElementById("camera-btn");
+        const cameraPage = document.getElementById("camera-page");
+        const cameraVideo = document.getElementById("camera-video");
+        const closeCameraBtn = document.getElementById("close-camera");
+        let cameraStream = null;
+
+
+        // 关闭公告（修复后版本）
+closeNotice.addEventListener("click", (e) => {
+    e.stopPropagation(); // 阻止冒泡到父层
+    noticeModal.style.display = "none";
+    localStorage.setItem("closedNotice", "true");
+});
+// 点击遮罩层/内容层外部关闭，忽略内容层内部点击
+noticeModal.addEventListener("click", (e) => {
+    // 判定：点击的是遮罩层本身，而非内容层及内部元素
+    if (e.target === noticeModal) {
+        noticeModal.style.display = "none";
+        localStorage.setItem("closedNotice", "true");
+    }
+});
+// 页面加载时判断是否已关闭公告
+window.addEventListener("load", () => {
+    if (localStorage.getItem("closedNotice")) {
+        noticeModal.style.display = "none";
+    }
+});
+
+
+        // 搜索功能
+        function debounce(fn, delay = 300) {
+            let timer = null;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+        const debouncedSearch = debounce(() => {
+            const keyword = searchInput.value.trim().toLowerCase();
+            if (!keyword) {
+                movieContainer.innerHTML = "<div class='empty-tip'>请输入有效的电影名称</div>";
+                return;
+            }
+            const matched = movieData.filter(m => m.name.toLowerCase().includes(keyword));
+            movieContainer.innerHTML = matched.length 
+                ? matched.map(m => `<div class='movie-card'><h3 class='movie-title'>${m.name}</h3><a href="${m.link}" target="_blank" class='movie-link'>打开电影链接</a></div>`).join("")
+                : "<div class='empty-tip'>未找到相关电影<br>可尝试其他关键词</div>";
+        });
+        searchBtn.addEventListener("click", debouncedSearch);
+        searchInput.addEventListener("keypress", (e) => e.key === "Enter" && debouncedSearch());
+        searchInput.addEventListener("input", debouncedSearch);
+
+        // 摄像头功能（关键修复：闭合catch代码块）
+        cameraBtn.addEventListener("click", async () => {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: 'user' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                cameraVideo.srcObject = cameraStream;
+                cameraPage.style.display = "block";
+                document.body.style.overflow = "hidden";
+            } catch (err) {
+                alert(`摄像头调用失败:请给予摄像头权限`); // 补充闭合"、分号;
+            }
+        });
+        closeCameraBtn.addEventListener("click", () => {
+            cameraPage.style.display = "none";
+            document.body.style.overflow = "auto";
+            if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        });
+    </script>
+</body>
+</html>
